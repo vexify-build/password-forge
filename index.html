@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Forge 🔐</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .password-display {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    #password {
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 100px 16px 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      letter-spacing: 1px;
+    }
+
+    #password:focus {
+      border-color: var(--accent);
+    }
+
+    .copy-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .copy-btn:hover {
+      background: #79b8ff;
+    }
+
+    .copy-btn.copied {
+      background: var(--green);
+    }
+
+    .strength-bar-container {
+      margin-bottom: 24px;
+    }
+
+    .strength-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .strength-name {
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .strength-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      transition: width 0.4s, background-color 0.4s;
+    }
+
+    .controls {
+      margin-bottom: 24px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .control-label {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .length-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+      margin-top: 8px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(88, 166, 255, 0.4);
+    }
+
+    .toggles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .toggle:hover {
+      border-color: var(--accent);
+    }
+
+    .toggle.active {
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.08);
+    }
+
+    .toggle input {
+      display: none;
+    }
+
+    .toggle-check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .toggle.active .toggle-check {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .toggle-check::after {
+      content: '✓';
+      font-size: 11px;
+      color: #fff;
+      display: none;
+    }
+
+    .toggle.active .toggle-check::after {
+      display: block;
+    }
+
+    .toggle-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .toggle-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #79b8ff;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .char-types {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .char-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      opacity: 0.3;
+      transition: opacity 0.2s;
+    }
+
+    .char-badge.active {
+      opacity: 1;
+    }
+
+    .badge-lower { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+    .badge-upper { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+    .badge-num   { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+    .badge-sym   { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔐 Password Forge</h1>
+      <p>Generate strong, random passwords in your browser</p>
+    </div>
+
+    <div class="card">
+      <div class="password-display">
+        <input type="text" id="password" readonly placeholder="Click Generate...">
+        <button class="copy-btn" id="copyBtn">Copy</button>
+      </div>
+
+      <div class="strength-bar-container">
+        <div class="strength-label">
+          <span class="strength-name" id="strengthName">Weak</span>
+          <span id="strengthScore" style="color: var(--muted)">0 / 100</span>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-fill" id="strengthFill"></div>
+        </div>
+        <div class="char-types">
+          <span class="char-badge badge-lower" id="badge-lower">a-z</span>
+          <span class="char-badge badge-upper" id="badge-upper">A-Z</span>
+          <span class="char-badge badge-num" id="badge-num">0-9</span>
+          <span class="char-badge badge-sym" id="badge-sym">!@#</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-row">
+          <span class="control-label">Password Length</span>
+          <span class="length-value" id="lengthVal">16</span>
+        </div>
+        <input type="range" id="lengthSlider" min="8" max="64" value="16">
+      </div>
+
+      <div class="toggles">
+        <label class="toggle active" id="toggle-lower">
+          <input type="checkbox" checked id="opt-lower">
+          <div class="toggle-check"></div>
+          <div>
+            <div class="toggle-text">Lowercase</div>
+            <div class="toggle-sub">a b c d ...</div>
+          </div>
+        </label>
+
+        <label class="toggle active" id="toggle-upper">
+          <input type="checkbox" checked id="opt-upper">
+          <div class="toggle-check"></div>
+          <div>
+            <div class="toggle-text">Uppercase</div>
+            <div class="toggle-sub">A B C D ...</div>
+          </div>
+        </label>
+
+        <label class="toggle active" id="toggle-num">
+          <input type="checkbox" checked id="opt-num">
+          <div class="toggle-check"></div>
+          <div>
+            <div class="toggle-text">Numbers</div>
+            <div class="toggle-sub">0 1 2 3 ...</div>
+          </div>
+        </label>
+
+        <label class="toggle active" id="toggle-sym">
+          <input type="checkbox" checked id="opt-sym">
+          <div class="toggle-check"></div>
+          <div>
+            <div class="toggle-text">Symbols</div>
+            <div class="toggle-sub">! @ # $ % ^ ...</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="generateBtn">⚡ Generate</button>
+        <button class="btn btn-secondary" id="copyBtnAlt">Copy</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      Passwords are generated locally — nothing is sent anywhere.
+    </div>
+  </div>
+
+  <script>
+    const CHARS = {
+      lower: 'abcdefghijklmnopqrstuvwxyz',
+      upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      num:   '0123456789',
+      sym:   '!@#$%^&*()-_=+[]{}|;:,.<>?',
+    };
+
+    const strengthBar = document.getElementById('strengthFill');
+    const strengthName = document.getElementById('strengthName');
+    const strengthScore = document.getElementById('strengthScore');
+    const lengthSlider = document.getElementById('lengthSlider');
+    const lengthVal = document.getElementById('lengthVal');
+    const passwordInput = document.getElementById('password');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyBtnAlt = document.getElementById('copyBtnAlt');
+
+    function getOptions() {
+      return {
+        lower: document.getElementById('opt-lower').checked,
+        upper: document.getElementById('opt-upper').checked,
+        num:   document.getElementById('opt-num').checked,
+        sym:   document.getElementById('opt-sym').checked,
+        length: parseInt(lengthSlider.value),
+      };
+    }
+
+    function generate(opts) {
+      let pool = '';
+      if (opts.lower) pool += CHARS.lower;
+      if (opts.upper) pool += CHARS.upper;
+      if (opts.num)   pool += CHARS.num;
+      if (opts.sym)   pool += CHARS.sym;
+      if (!pool) pool = CHARS.lower;
+
+      let pwd = '';
+      const len = pool.length;
+      const arr = new Uint32Array(opts.length);
+      crypto.getRandomValues(arr);
+      for (let i = 0; i < opts.length; i++) {
+        pwd += pool[arr[i] % len];
+      }
+      return pwd;
+    }
+
+    function calcStrength(pwd, opts) {
+      let score = 0;
+      if (!pwd) return 0;
+      score += Math.min(pwd.length * 4, 40);
+      if (pwd.match(/[a-z]/)) score += 10;
+      if (pwd.match(/[A-Z]/)) score += 15;
+      if (pwd.match(/[0-9]/)) score += 15;
+      if (pwd.match(/[^a-zA-Z0-9]/)) score += 20;
+      const unique = new Set(pwd).size;
+      score += Math.min(unique * 2, 20);
+
+      // Penalize if options turned off
+      if (!opts.lower) score -= 10;
+      if (!opts.upper) score -= 10;
+      if (!opts.num)   score -= 10;
+      if (!opts.sym)   score -= 10;
+
+      return Math.max(0, Math.min(100, score));
+    }
+
+    function updateStrength(pwd, opts) {
+      const score = calcStrength(pwd, opts);
+      strengthFill.style.width = score + '%';
+
+      let color, label;
+      if (score < 30) {
+        color = 'var(--red)'; label = 'Weak';
+      } else if (score < 60) {
+        color = 'var(--yellow)'; label = 'Fair';
+      } else if (score < 80) {
+        color = '#58a6ff'; label = 'Good';
+      } else {
+        color = 'var(--green)'; label = 'Strong';
+      }
+
+      strengthFill.style.backgroundColor = color;
+      strengthName.textContent = label;
+      strengthName.style.color = color;
+      strengthScore.textContent = score + ' / 100';
+    }
+
+    function updateBadges(opts) {
+      document.getElementById('badge-lower').classList.toggle('active', opts.lower);
+      document.getElementById('badge-upper').classList.toggle('active', opts.upper);
+      document.getElementById('badge-num').classList.toggle('active', opts.num);
+      document.getElementById('badge-sym').classList.toggle('active', opts.sym);
+    }
+
+    function copyToClipboard(pwd) {
+      navigator.clipboard.writeText(pwd).then(() => {
+        [copyBtn, copyBtnAlt].forEach(btn => {
+          const orig = btn.textContent;
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = orig;
+            btn.classList.remove('copied');
+          }, 1500);
+        });
+      });
+    }
+
+    // Toggle handlers
+    ['lower', 'upper', 'num', 'sym'].forEach(type => {
+      const toggle = document.getElementById('toggle-' + type);
+      const checkbox = document.getElementById('opt-' + type);
+      toggle.addEventListener('click', () => {
+        checkbox.checked = !checkbox.checked;
+        toggle.classList.toggle('active', checkbox.checked);
+        updateBadges(getOptions());
+        if (passwordInput.value) {
+          const pwd = generate(getOptions());
+          passwordInput.value = pwd;
+          updateStrength(pwd, getOptions());
+        }
+      });
+    });
+
+    lengthSlider.addEventListener('input', () => {
+      lengthVal.textContent = lengthSlider.value;
+    });
+
+    generateBtn.addEventListener('click', () => {
+      const opts = getOptions();
+      const pwd = generate(opts);
+      passwordInput.value = pwd;
+      updateStrength(pwd, opts);
+      updateBadges(opts);
+    });
+
+    copyBtn.addEventListener('click', () => copyToClipboard(passwordInput.value));
+    copyBtnAlt.addEventListener('click', () => copyToClipboard(passwordInput.value));
+
+    // Generate on load
+    generateBtn.click();
+  </script>
+</body>
+</html>
